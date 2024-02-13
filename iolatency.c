@@ -130,15 +130,42 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+uint64_t histogram_max(histogram h)
+{
+    uint64_t res = 0;
+    for (int i = 0; i < HISTOGRAM_NCOLUMN + 1; i++)
+    {
+        if (res < h[i])
+        {
+            res = h[i];
+        }
+    }
+    return res;
+}
 
 void print_histogram(histogram h)
 {
+    uint64_t max = histogram_max(h);
     printf("     usecs      : count       distribution\n");
     for (int i = 0; i < HISTOGRAM_NCOLUMN; i++)
     {
         uint64_t l = i ? (1 << i) : 0;
         uint64_t r = (1 << (i + 1)) - 1;
-        printf("%5lu -> %-7lu: %-10lu | ", l, r, h[i]);
-        printf("\n");
+        printf("%5lu -> %-7lu: %-10lu |", l, r, h[i]);
+
+        uint64_t n_asterisk = max == 0 ? 0 : ((float)h[i] / max) * HISTOGRAM_HEIGHT;
+        for (int j = 0; j < HISTOGRAM_HEIGHT; j++)
+        {
+            if (n_asterisk > j)
+            {
+                printf("*");
+            }
+            else
+            {
+                printf(" ");
+            }
+        }
+
+        printf("|\n");
     }
 }
