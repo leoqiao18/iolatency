@@ -66,6 +66,9 @@ int BPF_PROG(handle_tracepoint_block_rq_complete, struct request *req, int error
         return 0;
     }
 
+    // Delete request's insert time
+    bpf_map_delete_elem(&req_insert_ns_map, &req);
+
     // Get histogram map
     // histogram is stored as a singleton array
     u32 zero = 0;
@@ -89,6 +92,9 @@ int BPF_PROG(handle_tracepoint_block_rq_complete, struct request *req, int error
     size_t column = calc_column(delta);
 
     // Update histogram
+    // I think this is right?
+    // Saw this here: https://docs.kernel.org/bpf/map_array.html
+    // But can I actually pass the pointer to the element inside the array?
     __sync_fetch_and_add(&(*h)[column], 1);
 
     return 0;
